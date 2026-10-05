@@ -1,5 +1,5 @@
-<x-layouts.app :title="$reservation->reservation_no">
 @php use App\Enums\ReservationStatus as RS; @endphp
+<x-layouts.app :title="$reservation->reservation_no">
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
     <h2 class="mb-0">{{ __('Reservation') }} {{ $reservation->reservation_no }} <x-status :status="$reservation->status" class="fs-6" /></h2>
     <div class="d-flex gap-2">

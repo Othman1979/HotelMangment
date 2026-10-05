@@ -1,5 +1,9 @@
+@php use App\Enums\Role; @endphp
 <x-layouts.app :title="__('Dashboard')">
 @php
+    $user = auth()->user();
+    $frontOffice = $user->hasRole(Role::Manager, Role::FrontDesk, Role::Cashier);
+    $finance = $user->hasRole(Role::Manager, Role::NightAuditor, Role::Cashier);
     $cards = [
         ['in', 'Arrivals', $stats['arrivals'], 'icon-blue', route('front.index', 'arrivals')],
         ['bed', 'In-house', $stats['in_house'], 'icon-green', route('front.index', 'in-house')],
@@ -9,6 +13,9 @@
         ['broom', 'Dirty rooms', $stats['dirty'], 'icon-red', route('housekeeping.index', ['filter' => 'dirty'])],
         ['x', 'Out of order', $stats['ooo'], 'icon-slate', route('housekeeping.index', ['filter' => 'ooo'])],
     ];
+    if (! $frontOffice) {
+        $cards = array_slice($cards, 3);
+    }
     $svg = [
         'in' => '<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/>',
         'out' => '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>',
@@ -21,18 +28,20 @@
 @endphp
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
     <h2 class="mb-0">{{ __('Dashboard') }} <small class="text-muted fs-6" dir="ltr">{{ $today->toDateString() }}</small></h2>
+    @if ($frontOffice)
     <div class="d-flex gap-2">
         <a class="btn btn-light" href="{{ route('reservations.create', ['walk_in' => 1]) }}">{{ __('Walk-in') }}</a>
         <a class="btn btn-primary" href="{{ route('reservations.create') }}">+ {{ __('New reservation') }}</a>
     </div>
+    @endif
 </div>
 
-@unless ($shift)
+@if (! $shift && $user->hasRole(Role::Manager, Role::FrontDesk, Role::Cashier, Role::Outlet))
     <div class="alert alert-warning d-flex justify-content-between align-items-center">
         <span>{{ __('You have no open cashier shift. Payments and cash outlet sales need an open shift.') }}</span>
         <a class="btn btn-sm btn-light" href="{{ route('shifts.index') }}">{{ __('Open shift') }}</a>
     </div>
-@endunless
+@endif
 
 <div class="row g-3 mb-4">
     @foreach ($cards as [$icon, $label, $value, $color, $url])
@@ -63,6 +72,7 @@
             </div>
         </div>
     </div>
+    @if ($finance)
     <div class="col-lg-6">
         <div class="card h-100">
             <div class="card-header">{{ __('Last night audit') }}</div>
@@ -83,5 +93,6 @@
             </div>
         </div>
     </div>
+    @endif
 </div>
 </x-layouts.app>

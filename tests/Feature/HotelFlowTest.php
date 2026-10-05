@@ -94,6 +94,10 @@ class HotelFlowTest extends TestCase
     {
         $hk = User::where('username', 'hk')->first();
         $this->actingAs($hk)->get(route('housekeeping.index'))->assertOk();
+        $this->actingAs($hk)->get(route('home'))->assertOk()
+            ->assertDontSee(route('reservations.create'))
+            ->assertDontSee(route('shifts.index'))
+            ->assertDontSee(route('front.index', 'arrivals'));
         $this->actingAs($hk)->get(route('reservations.index'))->assertForbidden();
         $this->actingAs(User::where('username', 'outlet')->first())->get(route('settings.edit'))->assertForbidden();
     }
