@@ -1,18 +1,17 @@
 @php use App\Enums\ReservationStatus as RS; $stay = $account->stay; $inHouse = $stay?->status === RS::CheckedIn; @endphp
 <x-layouts.app :title="$account->account_no">
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-    <h2 class="mb-0">{{ $account->name }} <small class="text-muted fs-6">{{ $account->account_no }} · {{ $account->type->label() }}</small>
-        <span class="badge text-bg-{{ $account->isOpen() ? 'success' : 'secondary' }} fs-6">{{ $account->isOpen() ? __('Open') : __('Closed') }}</span></h2>
-    <div class="d-flex gap-2">
+<x-page-head :title="$account->name" :subtitle="$account->account_no.' · '.$account->type->label()" icon="wallet">
+    <x-slot:badge><span class="badge text-bg-{{ $account->isOpen() ? 'success' : 'secondary' }}">{{ $account->isOpen() ? __('Open') : __('Closed') }}</span></x-slot:badge>
+    <div class="d-flex flex-wrap gap-2">
         <a class="btn btn-light" href="{{ route('accounts.folio', $account) }}" target="_blank">{{ __('Print folio') }}</a>
         @foreach ($account->invoices as $inv)<a class="btn btn-light" href="{{ route('invoices.show', $inv) }}" target="_blank">{{ __('Invoice') }} {{ $inv->invoice_no }}</a>@endforeach
     </div>
-</div>
+</x-page-head>
 <div class="row g-3">
-    <div class="col-xl-8">
+    <div class="{{ $account->isOpen() ? 'col-xl-8' : 'col-12' }}">
         @if ($stay)
-            <div class="card card-body mb-3 small">
-                <div class="d-flex flex-wrap gap-4">
+            <div class="card card-body mb-3">
+                <div class="d-flex flex-wrap align-items-center gap-4 small">
                     <span>{{ __('Room') }}: <strong>{{ $stay->room?->room_number }}</strong></span>
                     <span>{{ __('Reservation') }}: <a href="{{ route('reservations.show', $stay->reservation_id) }}">{{ $stay->reservation->reservation_no }}</a></span>
                     <span>{{ __('Arrival') }}: <span dir="ltr">{{ $stay->arrival_date->toDateString() }}</span></span>
@@ -23,7 +22,7 @@
             </div>
         @endif
         <div class="table-responsive">
-            <table class="table table-sm">
+            <table class="table">
                 <thead><tr><th>{{ __('Date') }}</th><th>{{ __('Code') }}</th><th>{{ __('Description') }}</th><th class="text-end">{{ __('Net') }}</th><th class="text-end">{{ __('Service + tax') }}</th><th class="text-end">{{ __('Total') }}</th><th>{{ __('User') }}</th><th></th></tr></thead>
                 <tbody>
                 @forelse ($lines as $l)
@@ -52,8 +51,12 @@
             </table>
         </div>
     </div>
+    @if ($account->isOpen())
     <div class="col-xl-4">
-        @if ($account->isOpen())
+            <div class="balance-card mb-3 d-flex justify-content-between align-items-center">
+                <div><div class="label">{{ __('Balance') }}</div><div class="value" dir="ltr">{{ number_format((float) $account->balance, 3) }}</div></div>
+                <div class="text-end small"><div class="label">{{ $account->balance > 0 ? __('Due from guest') : ($account->balance < 0 ? __('Credit to guest') : __('Settled')) }}</div><div>{{ \App\Models\HotelSetting::current()->currency }}</div></div>
+            </div>
             @unless ($shift)
                 <div class="alert alert-warning">{{ __('Open a cashier shift first.') }} <a href="{{ route('shifts.index') }}">{{ __('Open shift') }}</a></div>
             @endunless
@@ -115,8 +118,8 @@
                     <div class="card-footer"><button class="btn btn-light w-100">{{ __('Move') }}</button></div>
                 </form>
             @endif
-        @endif
     </div>
+    @endif
 </div>
 <div class="modal fade" id="reverseModal" tabindex="-1">
     <div class="modal-dialog"><form method="post" class="modal-content" id="reverseForm">

@@ -7,9 +7,16 @@
                 </span>
                 <h2>{{ __('Hotel Management') }}</h2>
                 <p>{{ __('Reservations, front office, guest accounts, outlets and night audit in one system.') }}</p>
+                <ul class="login-features">
+                    <li>{{ __('Live room rack and availability') }}</li>
+                    <li>{{ __('Guest folios, receipts and invoices') }}</li>
+                    <li>{{ __('Internal outlets: restaurant, café, room service') }}</li>
+                    <li>{{ __('Night audit and management reports') }}</li>
+                </ul>
             </div>
             <div class="login-form-side">
-                <h3>{{ __('Login') }}</h3>
+                <h3>{{ __('Welcome') }}</h3>
+                <p class="lead-sub">{{ __('Sign in with your staff account to continue.') }}</p>
                 <form method="post" action="{{ route('login') }}">
                     @csrf
                     <div class="mb-3">
@@ -24,7 +31,7 @@
                         <input id="remember" name="remember" type="checkbox" value="1" class="form-check-input" checked>
                         <label for="remember" class="form-check-label">{{ __('Remember me') }}</label>
                     </div>
-                    <button type="submit" class="btn btn-primary w-100 py-2">{{ __('Login') }}</button>
+                    <button type="submit" class="btn btn-primary btn-lg w-100">{{ __('Login') }}</button>
                 </form>
             </div>
         </div>

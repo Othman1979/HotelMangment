@@ -27,7 +27,16 @@ class HousekeepingController extends Controller
             ->when($filter === 'occupied', fn ($q) => $q->where('occupancy_status', OccupancyStatus::Occupied->value))
             ->orderBy('floor')->orderBy('room_number')->get();
 
-        return view('housekeeping.index', ['rooms' => $rooms, 'filter' => $filter, 'today' => HotelSetting::businessDate()]);
+        $all = Room::query()->where('is_active', true)->get(['housekeeping_status', 'occupancy_status', 'service_status']);
+        $summary = [
+            'clean' => $all->where('housekeeping_status', HousekeepingStatus::Clean)->count(),
+            'dirty' => $all->where('housekeeping_status', HousekeepingStatus::Dirty)->count(),
+            'inspected' => $all->where('housekeeping_status', HousekeepingStatus::Inspected)->count(),
+            'occupied' => $all->where('occupancy_status', OccupancyStatus::Occupied)->count(),
+            'ooo' => $all->where('service_status', '!=', ServiceStatus::InService)->count(),
+        ];
+
+        return view('housekeeping.index', ['rooms' => $rooms, 'filter' => $filter, 'summary' => $summary, 'today' => HotelSetting::businessDate()]);
     }
 
     public function status(Request $request, Room $room)

@@ -1,25 +1,33 @@
 <x-layouts.app :title="$outlet->name()">
 @php $code = $outlet->transactionCode; @endphp
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-    <h2 class="mb-0">{{ $outlet->name() }}</h2>
+<x-page-head :title="$outlet->name()" :subtitle="__('Tap items to add them, then charge to a room or take payment.')" icon="pos">
     <a class="btn btn-light" href="{{ route('pos.index') }}">{{ __('All outlets') }}</a>
-</div>
+</x-page-head>
 <form method="post" action="{{ route('pos.store', $outlet) }}" id="posForm">
     @csrf
     <div class="row g-3">
         <div class="col-lg-8">
             <input id="itemFilter" class="form-control mb-3" placeholder="{{ __('Search items') }}">
+            @if ($items->count() > 1)
+                <div class="pos-cats">
+                    <button type="button" class="btn btn-sm btn-light active" data-cat="">{{ __('All') }}</button>
+                    @foreach ($items->keys() as $category)<button type="button" class="btn btn-sm btn-light" data-cat="{{ $category }}">{{ $category }}</button>@endforeach
+                </div>
+            @endif
             @forelse ($items as $category => $group)
-                <h6 class="text-muted mt-3 item-cat">{{ $category }}</h6>
+                <div class="item-group" data-cat="{{ $category }}">
+                <div class="section-title item-cat">{{ $category }}</div>
                 <div class="row g-2">
                     @foreach ($group as $item)
                         <div class="col-6 col-md-4 col-xxl-3 item-col" data-name="{{ mb_strtolower($item->name_ar.' '.$item->name_en) }}">
                             <button type="button" class="pos-item" data-id="{{ $item->id }}" data-name="{{ $item->name() }}" data-price="{{ $item->price }}">
+                                <span class="qty-badge d-none"></span>
                                 <span class="d-block fw-semibold">{{ $item->name() }}</span>
                                 <span class="price" dir="ltr">{{ number_format((float) $item->price, 3) }}</span>
                             </button>
                         </div>
                     @endforeach
+                </div>
                 </div>
             @empty
                 <p class="text-muted">{{ __('This outlet has no items yet.') }}</p>
@@ -33,7 +41,7 @@
                     <div class="d-flex justify-content-between small"><span>{{ __('Subtotal') }}</span><span id="sub" dir="ltr">0.000</span></div>
                     <div class="d-flex justify-content-between small"><span>{{ __('Service') }} {{ $code->has_service ? (float) $hotel->service_percent.'%' : '' }}</span><span id="svc" dir="ltr">0.000</span></div>
                     <div class="d-flex justify-content-between small"><span>{{ __('Tax') }} {{ $code->is_taxable ? (float) $hotel->tax_percent.'%' : '' }}</span><span id="tax" dir="ltr">0.000</span></div>
-                    <div class="d-flex justify-content-between fs-5 fw-semibold mt-1"><span>{{ __('Total') }}</span><span id="tot" dir="ltr">0.000</span></div>
+                    <div class="pos-total"><span>{{ __('Total') }}</span><span id="tot" dir="ltr">0.000</span></div>
                     <hr>
                     <div class="btn-group w-100 mb-2">
                         <input type="radio" class="btn-check" name="settlement" value="room" id="sRoom" checked>
@@ -54,7 +62,7 @@
                     </div>
                     <div id="qtyInputs"></div>
                 </div>
-                <div class="card-footer"><button class="btn btn-primary w-100" id="saveBtn" disabled>{{ __('Save check') }}</button></div>
+                <div class="card-footer"><button class="btn btn-primary btn-lg w-100" id="saveBtn" disabled>{{ __('Save check') }}</button></div>
             </div>
         </div>
     </div>
@@ -90,6 +98,12 @@
         document.getElementById('tot').textContent = f(sub + svc + tax);
         document.getElementById('cartEmpty').classList.toggle('d-none', cart.size > 0);
         document.getElementById('saveBtn').disabled = cart.size === 0;
+        document.querySelectorAll('.pos-item').forEach(b => {
+            const l = cart.get(b.dataset.id), badge = b.querySelector('.qty-badge');
+            b.classList.toggle('in-cart', !!l);
+            badge.classList.toggle('d-none', !l);
+            badge.textContent = l ? l.qty : '';
+        });
     }
     document.querySelectorAll('.pos-item').forEach(b => b.addEventListener('click', () => {
         const id = b.dataset.id, l = cart.get(id) || { name: b.dataset.name, price: parseFloat(b.dataset.price), qty: 0 };
@@ -104,6 +118,10 @@
         const q = e.target.value.trim().toLowerCase();
         document.querySelectorAll('.item-col').forEach(c => c.classList.toggle('d-none', q && !c.dataset.name.includes(q)));
     });
+    document.querySelectorAll('.pos-cats .btn').forEach(btn => btn.addEventListener('click', () => {
+        document.querySelectorAll('.pos-cats .btn').forEach(x => x.classList.toggle('active', x === btn));
+        document.querySelectorAll('.item-group').forEach(g => g.classList.toggle('d-none', btn.dataset.cat !== '' && g.dataset.cat !== btn.dataset.cat));
+    }));
 })();
 </script>
 </x-slot:scripts>

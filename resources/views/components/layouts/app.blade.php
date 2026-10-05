@@ -21,16 +21,22 @@
             </span>
             <span class="titlebar-name">{{ $hotel?->name() ?? __('Hotel Management') }}</span>
         </a>
+        @if ($user && isset($title))
+            <span class="titlebar-title">{{ $title }}</span>
+        @endif
         <div class="titlebar-actions">
             @if ($user)
-                <span class="badge text-bg-light border me-1" title="{{ __('Business date') }}">{{ __('Business date') }}: <span dir="ltr">{{ $hotel->business_date->toDateString() }}</span></span>
+                @if ($user->hasRole(Role::Manager, Role::FrontDesk, Role::Cashier))
+                    <a class="btn btn-sm btn-primary d-none d-md-inline-flex me-1" href="{{ route('reservations.create') }}"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>{{ __('New reservation') }}</a>
+                @endif
+                <span class="date-pill" title="{{ __('Business date') }}"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span class="date-label">{{ __('Business date') }}</span> <span dir="ltr">{{ $hotel->business_date->toDateString() }}</span></span>
             @endif
             <x-culture-switcher />
             @if ($user)
                 <div class="dropdown">
                     <button type="button" class="titlebar-btn titlebar-user" data-bs-toggle="dropdown" aria-expanded="false" title="{{ $user->name }}">
                         <span class="avatar">{{ $user->initial() }}</span>
-                        <span class="titlebar-username">{{ $user->name }}</span>
+                        <span class="user-meta"><span class="titlebar-username">{{ $user->name }}</span><span class="user-role">{{ $user->role->label() }}</span></span>
                     </button>
                     <div class="dropdown-menu dropdown-menu-end">
                         <div class="px-3 py-2">
@@ -51,6 +57,10 @@
 
     @if ($user)
         <nav class="navpane" id="navPane" aria-label="{{ __('Menu') }}">
+            <a class="navpane-brand" href="{{ route('home') }}">
+                <span class="brand-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16M9 7h.01M15 7h.01M9 11h.01M15 11h.01M10 21v-4h4v4"/></svg></span>
+                <span class="brand-text">{{ $hotel?->name() ?? __('Hotel Management') }}<small>{{ __('Hotel Management') }}</small></span>
+            </a>
             <x-nav-item route="home" :label="__('Dashboard')" icon="home" />
             <x-nav-item route="rack" :label="__('Room rack')" icon="rack" />
             @if ($user->hasRole(Role::Manager, Role::FrontDesk, Role::Cashier))

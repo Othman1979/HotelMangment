@@ -6,4 +6,6 @@
 <link rel="stylesheet" href="{{ asset(app()->getLocale() === 'ar' ? 'lib/bootstrap/dist/css/bootstrap.rtl.min.css' : 'lib/bootstrap/dist/css/bootstrap.min.css') }}">
 <link rel="stylesheet" href="{{ asset('css/site.css') }}?v={{ filemtime(public_path('css/site.css')) }}">
 <link rel="stylesheet" href="{{ asset('css/hotel.css') }}?v={{ filemtime(public_path('css/hotel.css')) }}">
-<meta name="theme-color" content="#f3f3f3">
+<link rel="preload" href="{{ asset('fonts/ibmplexsansarabic-arabic-400.woff2') }}" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="{{ asset('css/theme.css') }}?v={{ filemtime(public_path('css/theme.css')) }}">
+<meta name="theme-color" content="#0f2340">

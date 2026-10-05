@@ -1,17 +1,21 @@
 @php use App\Enums\HousekeepingStatus as HK; use App\Enums\ServiceStatus as SS; @endphp
 <x-layouts.app :title="__('Housekeeping')">
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-    <h2 class="mb-0">{{ __('Housekeeping') }}</h2>
+<x-page-head :title="__('Housekeeping')" :subtitle="__('Update room cleaning status and block rooms for maintenance.')" icon="broom">
     <div class="btn-group">
         @foreach (['' => 'All', 'dirty' => 'Dirty', 'occupied' => 'Occupied', 'ooo' => 'Out of order'] as $k => $l)
             <a class="btn btn-sm {{ (string) $filter === $k ? 'btn-primary' : 'btn-light' }}" href="{{ route('housekeeping.index', $k ? ['filter' => $k] : []) }}">{{ __($l) }}</a>
         @endforeach
     </div>
+</x-page-head>
+<div class="hk-summary">
+    @foreach ([['clean', 'Clean', 'icon-green'], ['inspected', 'Inspected', 'icon-blue'], ['dirty', 'Dirty', 'icon-red'], ['occupied', 'Occupied', 'icon-amber'], ['ooo', 'Out of order', 'icon-slate']] as [$k, $l, $c])
+        <div class="stat-card py-2"><span class="stat-icon {{ $c }}" style="width:36px;height:36px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/></svg></span><span><span class="stat-value d-block fs-5">{{ $summary[$k] }}</span><span class="stat-label">{{ __($l) }}</span></span></div>
+    @endforeach
 </div>
-<div class="row g-2">
+<div class="row g-3">
     @forelse ($rooms as $room)
         <div class="col-6 col-md-4 col-xl-3">
-            <div class="room-tile hk-{{ $room->housekeeping_status->value }}">
+            <div class="room-tile hk-{{ $room->housekeeping_status->value }} {{ $room->blocks->isNotEmpty() ? 'is-blocked' : '' }}">
                 <div class="d-flex justify-content-between align-items-center mb-1">
                     <span class="num">{{ $room->room_number }}</span>
                     <x-room-code :room="$room" />
@@ -29,7 +33,7 @@
                         <button name="status" value="{{ $s->value }}" class="btn {{ $room->housekeeping_status === $s ? 'btn-'.$s->color() : 'btn-light' }}">{{ $s->label() }}</button>
                     @endforeach
                 </form>
-                <button class="btn btn-sm btn-link px-0 mt-1" data-bs-toggle="modal" data-bs-target="#blockModal" data-action="{{ route('housekeeping.block', $room) }}" data-room="{{ $room->room_number }}">{{ __('Block room') }}</button>
+                <button class="btn btn-sm btn-link px-0 mt-2 align-self-start text-danger" data-bs-toggle="modal" data-bs-target="#blockModal" data-action="{{ route('housekeeping.block', $room) }}" data-room="{{ $room->room_number }}">{{ __('Block room') }}</button>
             </div>
         </div>
     @empty

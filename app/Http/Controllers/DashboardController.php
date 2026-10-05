@@ -23,6 +23,8 @@ class DashboardController extends Controller
 
         return view('dashboard', [
             'today' => $today,
+            'hotel' => HotelSetting::current(),
+            'typeTotals' => $rooms->countBy('room_type_id'),
             'stats' => [
                 'rooms' => $rooms->count(),
                 'occupied' => $rooms->where('occupancy_status', OccupancyStatus::Occupied)->count(),
@@ -34,6 +36,8 @@ class DashboardController extends Controller
                 'in_house' => (clone $stays)->where('status', ReservationStatus::CheckedIn->value)->count(),
                 'open_balance' => GuestAccount::query()->where('status', 'open')->sum('balance'),
             ],
+            'arrivalsList' => (clone $stays)->with(['reservation.guest', 'room', 'roomType'])->whereIn('status', [ReservationStatus::Confirmed->value, ReservationStatus::Tentative->value])->whereDate('arrival_date', $today)->orderBy('id')->limit(6)->get(),
+            'departuresList' => (clone $stays)->with(['reservation.guest', 'room', 'account'])->where('status', ReservationStatus::CheckedIn->value)->whereDate('departure_date', '<=', $today)->orderBy('id')->limit(6)->get(),
             'availability' => $availability->summary($today, $today->addDay()),
             'lastAudit' => NightAudit::query()->latest('business_date')->first(),
             'shift' => auth()->user()->openShift(),
