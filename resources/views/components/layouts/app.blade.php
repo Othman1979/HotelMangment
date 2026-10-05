@@ -38,7 +38,7 @@
                             <div class="small text-muted">{{ $user->username }} · {{ $user->role->label() }}</div>
                         </div>
                         <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="{{ route('shifts.index') }}">{{ __('My shift') }}</a>
+                        @if ($user->hasRole(Role::Manager, Role::FrontDesk, Role::Cashier, Role::Outlet))<a class="dropdown-item" href="{{ route('shifts.index') }}">{{ __('My shift') }}</a>@endif
                         <form action="{{ route('logout') }}" method="post">
                             @csrf
                             <button type="submit" class="dropdown-item">{{ __('Logout') }}</button>
