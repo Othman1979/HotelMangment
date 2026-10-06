@@ -54,6 +54,10 @@ return [
 
     'url' => env('APP_URL', 'http://localhost'),
 
+    // Public URL used when the app is reached through a reverse proxy that
+    // does not forward the original host/scheme (e.g. an HTTPS preview tunnel).
+    'public_url' => env('APP_PUBLIC_URL'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone
